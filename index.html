@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Beer Descriptors</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <header>
+        <h1>Beer Descriptors</h1>
+    </header>
+
+    <main>
+        <div class="search-container">
+            <input type="search" placeholder="Search for a descriptor...">
+        </div>
+
+        <div class="filters-container">
+            <button class="filter-btn active">All</button>
+            <button class="filter-btn">Fruity</button>
+            <button class="filter-btn">Spicy</button>
+            <button class="filter-btn">Malty</button>
+            <button class="filter-btn">Hoppy</button>
+        </div>
+
+        <div class="descriptor-list">
+            <a href="descriptor.html" class="descriptor-item">
+                <div class="item-content">
+                    <h2>Banana</h2>
+                    <p>Fruity</p>
+                </div>
+                <div class="item-confidence" data-level="7">7</div>
+            </a>
+            
+            <a href="descriptor.html" class="descriptor-item">
+                <div class="item-content">
+                    <h2>Clove</h2>
+                    <p>Spicy</p>
+                </div>
+                <div class="item-confidence" data-level="not-set">--</div>
+            </a>
+
+            <a href="descriptor.html" class="descriptor-item">
+                <div class="item-content">
+                    <h2>Bread Crust</h2>
+                    <p>Malty</p>
+                </div>
+                <div class="item-confidence" data-level="9">9</div>
+            </a>
+        </div>
+
+        <button class="fab">+</button>
+    </main>
+
+    <footer>
+        <nav>
+            <a href="index.html" class="nav-item active">Descriptors</a>
+            <a href="categories.html" class="nav-item">Categories</a>
+            <a href="settings.html" class="nav-item">Settings</a>
+        </nav>
+    </footer>
+
+    <script src="js/app.js"></script>
+</body>
+</html>
