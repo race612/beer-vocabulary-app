@@ -63,14 +63,14 @@ document.addEventListener("DOMContentLoaded", () => {
     
     console.log("App JavaScript caricata!");
 
-    // Seleziona il contenitore della lista
+    // --- SELETTORI DEGLI ELEMENTI (index.html) ---
     const descriptorListContainer = document.querySelector(".descriptor-list");
+    const searchBar = document.querySelector('input[type="search"]');
+    const filterButtons = document.querySelectorAll(".filter-btn");
 
-    // --- LOGICA PER GENERARE LA LISTA IN INDEX.HTML ---
-    if (descriptorListContainer) {
-        // Chiamiamo una funzione per "disegnare" la lista
-        renderDescriptorList(db);
-    }
+    // --- STATO ATTUALE DEI FILTRI ---
+    let currentCategory = "All";
+    let currentSearchTerm = "";
 
     /**
      * Funzione per renderizzare la lista dei descrittori
@@ -80,12 +80,16 @@ document.addEventListener("DOMContentLoaded", () => {
         // Svuotiamo la lista prima di riempirla
         descriptorListContainer.innerHTML = "";
         
+        // Se non ci sono risultati, mostra un messaggio
+        if (descriptors.length === 0) {
+            descriptorListContainer.innerHTML = "<p class='no-results'>Nessun descrittore trovato.</p>";
+            return;
+        }
+
         // Per ogni descrittore nel nostro DB...
         descriptors.forEach(descriptor => {
-            // Controlliamo se ci sono dati utente per questo ID
             const userEntry = userData[descriptor.id];
             
-            // Determiniamo il livello di confidenza da mostrare
             let confidenceLevel = "--";
             let confidenceData = "not-set";
             
@@ -94,9 +98,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 confidenceData = userEntry.confidence;
             }
 
-            // Creiamo l'HTML per il singolo descrittore
-            // NOTA: Per ora, tutti i link puntano a descriptor.html.
-            // In futuro, passeremo l'ID (es. descriptor.html?id=2)
             const itemHTML = `
                 <a href="descriptor.html" class="descriptor-item">
                     <div class="item-content">
@@ -109,13 +110,64 @@ document.addEventListener("DOMContentLoaded", () => {
                 </a>
             `;
             
-            // Aggiungiamo il nuovo HTML al contenitore
             descriptorListContainer.insertAdjacentHTML("beforeend", itemHTML);
         });
     }
 
+    /**
+     * NUOVA FUNZIONE: Applica i filtri e la ricerca correnti
+     */
+    function applyFiltersAndSearch() {
+        let filteredDb = db; // Inizia con il database completo
 
-    // --- LOGICA PER LA PAGINA DESCRIPTOR.HTML ---
+        // 1. Filtra per Categoria
+        if (currentCategory !== "All") {
+            filteredDb = filteredDb.filter(descriptor => 
+                descriptor.category === currentCategory
+            );
+        }
+
+        // 2. Filtra per Ricerca (sulla lista già filtrata)
+        const searchTerm = currentSearchTerm.toLowerCase();
+        if (searchTerm !== "") {
+            filteredDb = filteredDb.filter(descriptor => 
+                descriptor.name.toLowerCase().includes(searchTerm)
+            );
+        }
+
+        // 3. Renderizza il risultato
+        renderDescriptorList(filteredDb);
+    }
+
+    // --- LOGICA DI INIZIALIZZAZIONE (index.html) ---
+    if (descriptorListContainer) {
+        // Applica filtri e ricerca all'avvio (mostra tutto)
+        applyFiltersAndSearch(); 
+
+        // NUOVO: Aggiungi listener per la barra di ricerca
+        searchBar.addEventListener("input", (event) => {
+            currentSearchTerm = event.target.value;
+            applyFiltersAndSearch(); // Ridisegna la lista ad ogni lettera digitata
+        });
+
+        // NUOVO: Aggiungi listeners per i bottoni filtro
+        filterButtons.forEach(button => {
+            button.addEventListener("click", () => {
+                // Aggiorna lo stato della categoria
+                currentCategory = button.textContent; // Es. "Fruity", "All"
+                
+                // Aggiorna la UI dei bottoni (stile "active")
+                filterButtons.forEach(btn => btn.classList.remove("active"));
+                button.classList.add("active");
+
+                // Ridisegna la lista con il nuovo filtro
+                applyFiltersAndSearch();
+            });
+        });
+    }
+
+
+    // --- LOGICA PER LA PAGINA DESCRIPTOR.HTML (INVARIATA) ---
     const slider = document.querySelector(".slider");
     const sliderValue = document.querySelector(".slider-value");
 
@@ -126,8 +178,8 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // --- LOGICA PER LA BARRA DI NAVIGAZIONE (TUTTE LE PAGINE) ---
-    const currentPage = window.location.pathname.split('/').pop() || "index.html"; // Gestisce sia "/" che "/index.html"
+    // --- LOGICA PER LA BARRA DI NAVIGAZIONE (INVARIATA) ---
+    const currentPage = window.location.pathname.split('/').pop() || "index.html";
     const navLinks = document.querySelectorAll("footer .nav-item");
 
     navLinks.forEach(link => {
