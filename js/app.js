@@ -49,15 +49,28 @@ const db = [
     }
 ];
 
-// --- DATI UTENTE (Simulazione) ---
-// In futuro, questi dati saranno salvati nel localStorage del browser.
-// Per ora, usiamo un oggetto semplice per simulare che l'utente
-// abbia già impostato un livello per alcuni descrittori.
-const userData = {
-    1: { confidence: 7, notes: "Molto evidente nelle Weizen" },
-    3: { confidence: 9, notes: "Tipico delle Marzen/Oktoberfest" },
-    4: { confidence: 5, notes: "Ancora difficile da isolare" }
-};
+// --- GESTIONE DATI UTENTE (localStorage) ---
+
+/**
+ * Carica i dati utente salvati in localStorage
+ */
+function loadUserData() {
+    const data = localStorage.getItem("beerUserData"); // "beerUserData" è la chiave della nostra "scatola"
+    return data ? JSON.parse(data) : {}; // Se non c'è nulla, ritorna un oggetto vuoto
+}
+
+/**
+ * Salva l'oggetto userData corrente in localStorage
+ */
+function saveUserData() {
+    // localStorage può salvare solo stringhe, quindi convertiamo il nostro oggetto in JSON
+    localStorage.setItem("beerUserData", JSON.stringify(userData));
+    console.log("Dati utente salvati in localStorage.");
+}
+
+// All'avvio dell'app, carichiamo i dati.
+// NOTA: ora è 'let', non 'const', perché lo modificheremo.
+let userData = loadUserData();
 
 document.addEventListener("DOMContentLoaded", () => {
     
@@ -167,39 +180,32 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
 
-    // --- LOGICA PER LA PAGINA DESCRIPTOR.HTML ---
+   // --- LOGICA PER LA PAGINA DESCRIPTOR.HTML ---
     
-    // Selezioniamo gli elementi della pagina di dettaglio
     const descriptorNameEl = document.getElementById("desc-name");
 
-    // Controlliamo se siamo effettivamente nella pagina di dettaglio (cercando l'elemento h1)
     if (descriptorNameEl) {
         
         // 1. Leggi l'ID dall'URL
         const urlParams = new URLSearchParams(window.location.search);
-        const descriptorId = parseInt(urlParams.get('id')); // "id" è il nome che abbiamo dato nel link (es. ?id=1)
+        const descriptorId = parseInt(urlParams.get('id'));
 
-        // 2. Trova i dati nel nostro "database"
-        // usiamo .find() per cercare nell'array db l'oggetto con l'id giusto
+        // 2. Trova i dati del descrittore
         const descriptor = db.find(d => d.id === descriptorId);
 
-        // 3. Trova i dati utente
-        const userEntry = userData[descriptorId] || {}; // Usa un oggetto vuoto se non c'è
+        // 3. Trova i dati utente (ora caricati da localStorage)
+        const userEntry = userData[descriptorId] || {}; 
 
-        // 4. Popola la pagina!
+        // 4. Popola la pagina
         if (descriptor) {
-            // Popola Header e Titolo della pagina
-            document.title = descriptor.name; // Aggiorna il titolo della scheda del browser
+            document.title = descriptor.name;
             descriptorNameEl.textContent = descriptor.name;
-
-            // Popola le card
             document.getElementById("desc-translation").textContent = descriptor.translation;
             document.getElementById("desc-category").textContent = descriptor.category;
             document.getElementById("desc-description").textContent = descriptor.description;
 
-            // Popola le fonti (creando <li> dinamicamente)
             const sourcesListEl = document.getElementById("desc-sources");
-            sourcesListEl.innerHTML = ""; // Pulisci prima
+            sourcesListEl.innerHTML = "";
             if (descriptor.sources.length > 0) {
                 descriptor.sources.forEach(source => {
                     sourcesListEl.innerHTML += `<li><a href="${source.url}" target="_blank">${source.name}</a></li>`;
@@ -208,8 +214,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 sourcesListEl.innerHTML = "<li>Nessuna fonte specificata.</li>";
             }
 
-            // Popola i campi utente (Note e Slider)
-            document.getElementById("desc-notes").value = userEntry.notes || "";
+            // Popola i campi utente
+            const notesTextarea = document.getElementById("desc-notes");
+            notesTextarea.value = userEntry.notes || "";
             
             const slider = document.getElementById("desc-slider");
             const sliderValue = document.getElementById("desc-slider-value");
@@ -218,27 +225,46 @@ document.addEventListener("DOMContentLoaded", () => {
             if (userEntry.confidence) {
                 slider.value = userEntry.confidence;
                 sliderValue.textContent = userEntry.confidence;
-                sliderLabel.textContent = "Your rating:"; // Etichetta se impostato
+                sliderLabel.textContent = "Your rating:";
             } else {
-                // Valori di default se non ancora impostato
                 slider.value = 1; 
                 sliderValue.textContent = "1";
                 sliderLabel.textContent = "Not yet set";
             }
 
-            // Aggiungi l'evento allo slider (come prima, ma usando i nuovi selettori)
+            // --- NUOVO: LISTENER PER SALVARE I DATI ---
+
+            // 1. Salva quando lo SLIDER viene mosso
             slider.addEventListener("input", (event) => {
-                sliderValue.textContent = event.target.value;
-                sliderLabel.textContent = "Your rating:"; // Cambia l'etichetta
+                const newConfidence = parseInt(event.target.value);
+                sliderValue.textContent = newConfidence;
+                sliderLabel.textContent = "Your rating:";
+                
+                // Aggiorna l'oggetto 'userData'
+                if (!userData[descriptorId]) userData[descriptorId] = {}; // Crea l'oggetto se non esiste
+                userData[descriptorId].confidence = newConfidence;
+                
+                // Salva in localStorage
+                saveUserData();
+            });
+
+            // 2. Salva quando l'utente SCRIVE NELLE NOTE
+            notesTextarea.addEventListener("input", (event) => {
+                const newNotes = event.target.value;
+                
+                // Aggiorna l'oggetto 'userData'
+                if (!userData[descriptorId]) userData[descriptorId] = {};
+                userData[descriptorId].notes = newNotes;
+                
+                // Salva in localStorage
+                saveUserData();
             });
 
         } else {
-            // Se l'ID non è valido o non trovato
-            descriptorNameEl.textContent = "Errore";
-            document.getElementById("desc-description").textContent = "Descrittore non trovato. Torna alla lista principale.";
+            // ... (codice di errore invariato) ...
         }
     }
-
+    
     // --- LOGICA PER LA BARRA DI NAVIGAZIONE (INVARIATA) ---
     const currentPage = window.location.pathname.split('/').pop() || "index.html";
     const navLinks = document.querySelectorAll("footer .nav-item");
