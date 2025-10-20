@@ -99,7 +99,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             const itemHTML = `
-                <a href="descriptor.html" class="descriptor-item">
+                <a href="descriptor.html?id=${descriptor.id}" class="descriptor-item">
                     <div class="item-content">
                         <h2>${descriptor.name}</h2>
                         <p>${descriptor.category}</p>
@@ -167,15 +167,76 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
 
-    // --- LOGICA PER LA PAGINA DESCRIPTOR.HTML (INVARIATA) ---
-    const slider = document.querySelector(".slider");
-    const sliderValue = document.querySelector(".slider-value");
+    // --- LOGICA PER LA PAGINA DESCRIPTOR.HTML ---
+    
+    // Selezioniamo gli elementi della pagina di dettaglio
+    const descriptorNameEl = document.getElementById("desc-name");
 
-    if (slider && sliderValue) {
-        sliderValue.textContent = slider.value;
-        slider.addEventListener("input", (event) => {
-            sliderValue.textContent = event.target.value;
-        });
+    // Controlliamo se siamo effettivamente nella pagina di dettaglio (cercando l'elemento h1)
+    if (descriptorNameEl) {
+        
+        // 1. Leggi l'ID dall'URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const descriptorId = parseInt(urlParams.get('id')); // "id" è il nome che abbiamo dato nel link (es. ?id=1)
+
+        // 2. Trova i dati nel nostro "database"
+        // usiamo .find() per cercare nell'array db l'oggetto con l'id giusto
+        const descriptor = db.find(d => d.id === descriptorId);
+
+        // 3. Trova i dati utente
+        const userEntry = userData[descriptorId] || {}; // Usa un oggetto vuoto se non c'è
+
+        // 4. Popola la pagina!
+        if (descriptor) {
+            // Popola Header e Titolo della pagina
+            document.title = descriptor.name; // Aggiorna il titolo della scheda del browser
+            descriptorNameEl.textContent = descriptor.name;
+
+            // Popola le card
+            document.getElementById("desc-translation").textContent = descriptor.translation;
+            document.getElementById("desc-category").textContent = descriptor.category;
+            document.getElementById("desc-description").textContent = descriptor.description;
+
+            // Popola le fonti (creando <li> dinamicamente)
+            const sourcesListEl = document.getElementById("desc-sources");
+            sourcesListEl.innerHTML = ""; // Pulisci prima
+            if (descriptor.sources.length > 0) {
+                descriptor.sources.forEach(source => {
+                    sourcesListEl.innerHTML += `<li><a href="${source.url}" target="_blank">${source.name}</a></li>`;
+                });
+            } else {
+                sourcesListEl.innerHTML = "<li>Nessuna fonte specificata.</li>";
+            }
+
+            // Popola i campi utente (Note e Slider)
+            document.getElementById("desc-notes").value = userEntry.notes || "";
+            
+            const slider = document.getElementById("desc-slider");
+            const sliderValue = document.getElementById("desc-slider-value");
+            const sliderLabel = document.getElementById("slider-label");
+            
+            if (userEntry.confidence) {
+                slider.value = userEntry.confidence;
+                sliderValue.textContent = userEntry.confidence;
+                sliderLabel.textContent = "Your rating:"; // Etichetta se impostato
+            } else {
+                // Valori di default se non ancora impostato
+                slider.value = 1; 
+                sliderValue.textContent = "1";
+                sliderLabel.textContent = "Not yet set";
+            }
+
+            // Aggiungi l'evento allo slider (come prima, ma usando i nuovi selettori)
+            slider.addEventListener("input", (event) => {
+                sliderValue.textContent = event.target.value;
+                sliderLabel.textContent = "Your rating:"; // Cambia l'etichetta
+            });
+
+        } else {
+            // Se l'ID non è valido o non trovato
+            descriptorNameEl.textContent = "Errore";
+            document.getElementById("desc-description").textContent = "Descrittore non trovato. Torna alla lista principale.";
+        }
     }
 
     // --- LOGICA PER LA BARRA DI NAVIGAZIONE (INVARIATA) ---
