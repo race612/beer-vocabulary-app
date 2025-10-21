@@ -13,8 +13,7 @@ try {
 // ------------------------------
 
 // Ora abbiamo accesso alla variabile 'APP_VERSION' definita in config.js
-
-const CACHE_NAME = `beer-vocab-cache-v${APP_VERSION}`; 
+const CACHE_NAME = `beer-vocab-cache-app-v${APP_VERSION}-db-v${DB_VERSION}`;
 
 const FILES_TO_CACHE = [
   REPO_PREFIX, 

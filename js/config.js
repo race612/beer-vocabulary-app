@@ -4,7 +4,7 @@ const APP_VERSION = "0.1.0";
 
 // --- VERSIONE DATABASE DESCRITTORI ---
 // Dati nel 'db' array
-const DB_VERSION = "0.0.1";
+const DB_VERSION = "0.0.2";
 
 // --- DATABASE DEI DESCRITTORI ---
 const db = [
@@ -51,5 +51,15 @@ const db = [
         translation: "Caramello",
         description: "Aroma dolce e ricco che può variare da caramella mou a zucchero bruciato, derivato da malti speciali caramellati.",
         sources: []
+    },
+    {
+        id: 6,
+        name: "Diacetyl",
+        category: "Off-Flavor",
+        translation: "Diacetile",
+        description: "Aroma e sapore di burro, caramella mou (butterscotch) o latte inacidito. È prodotto da quasi tutti i ceppi di lievito durante la fermentazione, ma normalmente viene riassorbito. Se presente, è spesso un segno di fermentazione interrotta, problemi di lievito o contaminazione batterica.",
+        sources: [
+            { name: "BJCP Off-Flavor List", url: "https://www.bjcp.org/" }
+        ]
     }
 ];
