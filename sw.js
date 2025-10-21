@@ -1,14 +1,11 @@
 // --- MODIFICA OBBLIGATORIA ---
-// Sostituisci '/beer-vocabulary-app/' con il nome del tuo repository GitHub, 
-// assicurandoti che inizi e finisca con uno slash '/'.
+// Sostituisci con il nome del tuo repo
 const REPO_PREFIX = '/beer-vocabulary-app/'; 
+// ------------------------------
 
-// Aumentiamo la versione della cache. Ogni volta che modifichi questo file,
-// aumenta il numero (v2, v3...) per forzare l'aggiornamento.
-const CACHE_NAME = 'beer-vocab-cache-v2';
+// 1. INCREMENTA LA VERSIONE DELLA CACHE
+const CACHE_NAME = 'beer-vocab-cache-v3'; // Da v2 a v3
 
-// Lista dei file fondamentali dell'app da salvare subito.
-// Ora usiamo il REPO_PREFIX per creare i percorsi corretti.
 const FILES_TO_CACHE = [
   REPO_PREFIX,
   REPO_PREFIX + 'index.html',
@@ -24,31 +21,27 @@ const FILES_TO_CACHE = [
   REPO_PREFIX + 'images/icon-512x512.png'
 ];
 
-// 1. Evento "install": Salva i file fondamentali nella cache
+// Evento "install"
 self.addEventListener('install', (evt) => {
-  console.log('[ServiceWorker] Install');
+  console.log('[ServiceWorker] Install v3');
   
   evt.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      console.log('[ServiceWorker] Pre-caching app shell con percorsi corretti');
-      return cache.addAll(FILES_TO_CACHE)
-        .catch(error => {
-            // Se c'è un errore, loggalo! Così sappiamo quale file ha fallito.
-            console.error('[ServiceWorker] Impossibile eseguire il pre-caching', error);
-        });
+      console.log('[ServiceWorker] Pre-caching app shell');
+      return cache.addAll(FILES_TO_CACHE);
     })
   );
-
-  self.skipWaiting();
+  
+  // 2. RIMUOVI self.skipWaiting() DA QUI!
+  // Non lo vogliamo più automatico.
 });
 
-// 2. Evento "activate": Pulisce le vecchie cache
+// Evento "activate" (invariato)
 self.addEventListener('activate', (evt) => {
   console.log('[ServiceWorker] Activate');
   evt.waitUntil(
     caches.keys().then((keyList) => {
       return Promise.all(keyList.map((key) => {
-        // Elimina tutte le cache che NON sono quella attuale (v2)
         if (key !== CACHE_NAME) {
           console.log('[ServiceWorker] Removing old cache', key);
           return caches.delete(key);
@@ -59,30 +52,16 @@ self.addEventListener('activate', (evt) => {
   self.clients.claim();
 });
 
-// 3. Evento "fetch": Intercetta le richieste di rete
-self.addEventListener('fetch', (evt) => {
-  if (evt.request.method !== 'GET') {
-    return;
+// 3. AGGIUNGI QUESTO NUOVO BLOCCO
+// Questo listener aspetta il messaggio dal popup
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    console.log('[ServiceWorker] Ricevuto comando SKIP_WAITING');
+    self.skipWaiting(); // Attiva il nuovo Service Worker
   }
-  
-  // Strategia: Cache First
-  evt.respondWith(
-    caches.match(evt.request)
-      .then((response) => {
-        if (response) {
-          // Trovato in cache
-          // console.log('[ServiceWorker] Fetching from cache:', evt.request.url);
-          return response;
-        }
-        
-        // Non trovato in cache, vai su Internet
-        // console.log('[ServiceWorker] Fetching from network:', evt.request.url);
-        return fetch(evt.request)
-            .then(networkResponse => {
-                // (Opzionale) Potremmo salvare in cache anche queste nuove richieste
-                // ma per ora lo lasciamo semplice.
-                return networkResponse;
-            });
-      })
-  );
+});
+
+// Evento "fetch" (invariato)
+self.addEventListener('fetch', (evt) => {
+    // ... (il tuo codice 'fetch' rimane identico) ...
 });

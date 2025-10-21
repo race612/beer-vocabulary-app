@@ -146,3 +146,33 @@ textarea {
 .slider {
     flex-grow: 1;
 }
+
+/* Stile per il popup di aggiornamento */
+.update-popup {
+    position: fixed;
+    bottom: 80px; /* Appena sopra la barra di navigazione */
+    left: 1rem;
+    right: 1rem;
+    background-color: #333;
+    color: white;
+    padding: 1rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 100;
+}
+
+.update-popup p {
+    margin: 0;
+}
+
+.update-popup button {
+    background-color: #007aff;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 5px;
+    cursor: pointer;
+}

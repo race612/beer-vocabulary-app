@@ -297,20 +297,75 @@ document.addEventListener("DOMContentLoaded", () => {
 
 }); // Fine di DOMContentLoaded
 
-
-// --- REGISTRAZIONE SERVICE WORKER ---
-// Questo codice viene eseguito sempre, all'avvio
+// --- REGISTRAZIONE SERVICE WORKER (versione avanzata con popup) ---
 
 if ('serviceWorker' in navigator) {
-  // Aspetta che la pagina sia completamente caricata
-  window.addEventListener('load', () => {
-    // Registra il nostro file sw.js
-    navigator.serviceWorker.register('sw.js')
-      .then((reg) => {
-        console.log('Service worker registrato con successo.', reg);
-      })
-      .catch((err) => {
-        console.error('Errore durante la registrazione del Service Worker:', err);
+  
+  // Funzione per mostrare il popup
+  function showUpdatePopup(registration) {
+    const popup = document.getElementById('update-popup');
+    const button = document.getElementById('update-button');
+
+    if (!popup || !button) {
+        console.log('Elementi popup non trovati');
+        return; // Esci se non siamo in una pagina con il popup
+    }
+
+    // Aggiungi l'azione al pulsante
+    button.addEventListener('click', () => {
+      // Dici al nuovo SW (in attesa) di attivarsi
+      registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+      popup.style.display = 'none'; // Nascondi il popup
+    });
+
+    // Mostra il popup
+    popup.style.display = 'flex';
+  }
+  
+  // Registra il Service Worker
+  navigator.serviceWorker.register('sw.js')
+    .then((reg) => {
+      console.log('Service worker registrato.', reg);
+
+      // 1. C'È GIÀ UN NUOVO WORKER IN ATTESA?
+      // Questo accade se l'utente ha caricato la pagina 
+      // mentre l'aggiornamento era già pronto.
+      if (reg.waiting) {
+        console.log('Trovato un SW in attesa. Mostro popup.');
+        showUpdatePopup(reg);
+        return; // Fatto
+      }
+
+      // 2. UN NUOVO WORKER VIENE TROVATO?
+      // Questo listener rileva quando un *nuovo* SW 
+      // viene scaricato in background.
+      reg.addEventListener('updatefound', () => {
+        console.log('Trovato aggiornamento. In attesa di installazione...');
+        
+        // Prendiamo il nuovo worker
+        const newWorker = reg.installing;
+        
+        // Aspettiamo che finisca l'installazione
+        newWorker.addEventListener('statechange', () => {
+          if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+            // Installazione completata! Ora è in stato 'waiting'.
+            // È il momento di mostrare il popup.
+            console.log('Nuovo SW installato e in attesa. Mostro popup.');
+            showUpdatePopup(reg);
+          }
+        });
       });
+    })
+    .catch((err) => {
+      console.error('Errore durante la registrazione del Service Worker:', err);
+    });
+
+  // 3. RICARICA LA PAGINA DOPO L'UPDATE
+  // Quando il nuovo SW prende finalmente il controllo 
+  // (dopo il click sul pulsante), ricarichiamo la pagina
+  // per assicurarci che usi i nuovi file della cache v3.
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    console.log('Controller cambiato! Ricarico la pagina.');
+    window.location.reload();
   });
 }
