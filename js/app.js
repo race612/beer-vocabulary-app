@@ -1,7 +1,5 @@
 // --- DATABASE DEI DESCRITTORI ---
-// In futuro, questo potrà essere caricato da un file JSON.
-// Per ora, lo teniamo qui per semplicità.
-
+// Questo è il nostro database statico dell'app
 const db = [
     {
         id: 1,
@@ -55,7 +53,7 @@ const db = [
  * Carica i dati utente salvati in localStorage
  */
 function loadUserData() {
-    const data = localStorage.getItem("beerUserData"); // "beerUserData" è la chiave della nostra "scatola"
+    const data = localStorage.getItem("beerUserData"); // "beerUserData" è la chiave
     return data ? JSON.parse(data) : {}; // Se non c'è nulla, ritorna un oggetto vuoto
 }
 
@@ -69,27 +67,31 @@ function saveUserData() {
 }
 
 // All'avvio dell'app, carichiamo i dati.
-// NOTA: ora è 'let', non 'const', perché lo modificheremo.
 let userData = loadUserData();
 
+
+// --- EVENT LISTENER PRINCIPALE ---
+// Aspetta che l'HTML sia caricato prima di eseguire lo script
 document.addEventListener("DOMContentLoaded", () => {
     
     console.log("App JavaScript caricata!");
 
-    // --- SELETTORI DEGLI ELEMENTI (index.html) ---
+    // --- SELETTORI GLOBALI (per index.html) ---
     const descriptorListContainer = document.querySelector(".descriptor-list");
     const searchBar = document.querySelector('input[type="search"]');
     const filterButtons = document.querySelectorAll(".filter-btn");
 
-    // --- STATO ATTUALE DEI FILTRI ---
+    // Stato attuale dei filtri
     let currentCategory = "All";
     let currentSearchTerm = "";
 
     /**
-     * Funzione per renderizzare la lista dei descrittori
+     * Funzione per renderizzare la lista dei descrittori (index.html)
      * @param {Array} descriptors - L'array di descrittori da mostrare
      */
     function renderDescriptorList(descriptors) {
+        if (!descriptorListContainer) return; // Non fare nulla se non siamo in index.html
+
         // Svuotiamo la lista prima di riempirla
         descriptorListContainer.innerHTML = "";
         
@@ -101,8 +103,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // Per ogni descrittore nel nostro DB...
         descriptors.forEach(descriptor => {
+            // Controlliamo se ci sono dati utente per questo ID
             const userEntry = userData[descriptor.id];
             
+            // Determiniamo il livello di confidenza da mostrare
             let confidenceLevel = "--";
             let confidenceData = "not-set";
             
@@ -111,6 +115,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 confidenceData = userEntry.confidence;
             }
 
+            // Creiamo l'HTML per il singolo descrittore
             const itemHTML = `
                 <a href="descriptor.html?id=${descriptor.id}" class="descriptor-item">
                     <div class="item-content">
@@ -123,12 +128,13 @@ document.addEventListener("DOMContentLoaded", () => {
                 </a>
             `;
             
+            // Aggiungiamo il nuovo HTML al contenitore
             descriptorListContainer.insertAdjacentHTML("beforeend", itemHTML);
         });
     }
 
     /**
-     * NUOVA FUNZIONE: Applica i filtri e la ricerca correnti
+     * Funzione che applica i filtri e la ricerca correnti
      */
     function applyFiltersAndSearch() {
         let filteredDb = db; // Inizia con il database completo
@@ -152,18 +158,18 @@ document.addEventListener("DOMContentLoaded", () => {
         renderDescriptorList(filteredDb);
     }
 
-    // --- LOGICA DI INIZIALIZZAZIONE (index.html) ---
+    // --- LOGICA DI INIZIALIZZAZIONE (Solo per index.html) ---
     if (descriptorListContainer) {
         // Applica filtri e ricerca all'avvio (mostra tutto)
         applyFiltersAndSearch(); 
 
-        // NUOVO: Aggiungi listener per la barra di ricerca
+        // Aggiungi listener per la barra di ricerca
         searchBar.addEventListener("input", (event) => {
             currentSearchTerm = event.target.value;
             applyFiltersAndSearch(); // Ridisegna la lista ad ogni lettera digitata
         });
 
-        // NUOVO: Aggiungi listeners per i bottoni filtro
+        // Aggiungi listeners per i bottoni filtro
         filterButtons.forEach(button => {
             button.addEventListener("click", () => {
                 // Aggiorna lo stato della categoria
@@ -180,32 +186,38 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
 
-   // --- LOGICA PER LA PAGINA DESCRIPTOR.HTML ---
+    // --- LOGICA PER LA PAGINA DESCRIPTOR.HTML ---
     
+    // Selezioniamo l'h1 della pagina di dettaglio
     const descriptorNameEl = document.getElementById("desc-name");
 
+    // Questo blocco di codice viene eseguito SOLO se siamo in descriptor.html
     if (descriptorNameEl) {
         
         // 1. Leggi l'ID dall'URL
         const urlParams = new URLSearchParams(window.location.search);
-        const descriptorId = parseInt(urlParams.get('id'));
+        const descriptorId = parseInt(urlParams.get('id')); // "id" è il nome che abbiamo dato nel link (es. ?id=1)
 
-        // 2. Trova i dati del descrittore
+        // 2. Trova i dati nel nostro "database"
         const descriptor = db.find(d => d.id === descriptorId);
 
-        // 3. Trova i dati utente (ora caricati da localStorage)
-        const userEntry = userData[descriptorId] || {}; 
+        // 3. Trova i dati utente (da localStorage)
+        const userEntry = userData[descriptorId] || {}; // Usa un oggetto vuoto se non c'è
 
         // 4. Popola la pagina
         if (descriptor) {
-            document.title = descriptor.name;
+            // Popola Header e Titolo della pagina
+            document.title = descriptor.name; // Aggiorna il titolo della scheda del browser
             descriptorNameEl.textContent = descriptor.name;
+
+            // Popola le card
             document.getElementById("desc-translation").textContent = descriptor.translation;
             document.getElementById("desc-category").textContent = descriptor.category;
             document.getElementById("desc-description").textContent = descriptor.description;
 
+            // Popola le fonti
             const sourcesListEl = document.getElementById("desc-sources");
-            sourcesListEl.innerHTML = "";
+            sourcesListEl.innerHTML = ""; // Pulisci prima
             if (descriptor.sources.length > 0) {
                 descriptor.sources.forEach(source => {
                     sourcesListEl.innerHTML += `<li><a href="${source.url}" target="_blank">${source.name}</a></li>`;
@@ -214,7 +226,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 sourcesListEl.innerHTML = "<li>Nessuna fonte specificata.</li>";
             }
 
-            // Popola i campi utente
+            // Popola i campi utente (Note e Slider)
             const notesTextarea = document.getElementById("desc-notes");
             notesTextarea.value = userEntry.notes || "";
             
@@ -227,12 +239,13 @@ document.addEventListener("DOMContentLoaded", () => {
                 sliderValue.textContent = userEntry.confidence;
                 sliderLabel.textContent = "Your rating:";
             } else {
+                // Valori di default se non ancora impostato
                 slider.value = 1; 
                 sliderValue.textContent = "1";
                 sliderLabel.textContent = "Not yet set";
             }
 
-            // --- NUOVO: LISTENER PER SALVARE I DATI ---
+            // --- LISTENER PER SALVARE I DATI ---
 
             // 1. Salva quando lo SLIDER viene mosso
             slider.addEventListener("input", (event) => {
@@ -261,12 +274,15 @@ document.addEventListener("DOMContentLoaded", () => {
             });
 
         } else {
-            // ... (codice di errore invariato) ...
+            // Se l'ID non è valido o non trovato
+            descriptorNameEl.textContent = "Errore";
+            document.getElementById("desc-description").textContent = "Descrittore non trovato. Torna alla lista principale.";
         }
     }
-    
-    // --- LOGICA PER LA BARRA DI NAVIGAZIONE (INVARIATA) ---
-    const currentPage = window.location.pathname.split('/').pop() || "index.html";
+
+    // --- LOGICA PER LA BARRA DI NAVIGAZIONE (TUTTE LE PAGINE) ---
+    // Recupera il nome del file della pagina attuale
+    const currentPage = window.location.pathname.split('/').pop() || "index.html"; 
     const navLinks = document.querySelectorAll("footer .nav-item");
 
     navLinks.forEach(link => {
@@ -278,21 +294,23 @@ document.addEventListener("DOMContentLoaded", () => {
             link.classList.remove("active");
         }
     });
-});
 
-    // --- REGISTRAZIONE SERVICE WORKER ---
-    // Questo codice viene eseguito all'avvio
+}); // Fine di DOMContentLoaded
 
-    if ('serviceWorker' in navigator) {
-    // Aspetta che la pagina sia completamente caricata
-    window.addEventListener('load', ()_ => {
-        // Registra il nostro file sw.js
-        navigator.serviceWorker.register('sw.js')
-        .then((reg) => {
-            console.log('Service worker registrato con successo.', reg);
-        })
-        .catch((err) => {
-            console.error('Errore durante la registrazione del Service Worker:', err);
-        });
-    });
-    }
+
+// --- REGISTRAZIONE SERVICE WORKER ---
+// Questo codice viene eseguito sempre, all'avvio
+
+if ('serviceWorker' in navigator) {
+  // Aspetta che la pagina sia completamente caricata
+  window.addEventListener('load', () => {
+    // Registra il nostro file sw.js
+    navigator.serviceWorker.register('sw.js')
+      .then((reg) => {
+        console.log('Service worker registrato con successo.', reg);
+      })
+      .catch((err) => {
+        console.error('Errore durante la registrazione del Service Worker:', err);
+      });
+  });
+}
