@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Descriptor</title>
+    <link rel="stylesheet" href="css/style.css">
+    
+    <meta name="theme-color" content="#007aff">
+    <link rel="manifest" href="manifest.json">
+</head>
+<body>
+
+    <header>
+        <a href="index.html" class="back-button">&larr;</a>
+        <h1>Add Descriptor</h1>
+    </header>
+
+    <main>
+        <form id="add-descriptor-form">
+            
+            <div class="detail-card">
+                <h3>Descriptor Name (EN)</h3>
+                <input type="text" id="form-name-en" placeholder="e.g., Pineapple" required>
+            </div>
+            
+            <div class="detail-card">
+                <h3>Translation (Italiano)</h3>
+                <input type="text" id="form-name-it" placeholder="e.g., Ananas" required>
+            </div>
+
+            <div class="detail-card">
+                <h3>Category</h3>
+                <select id="form-category" required>
+                    <option value="" disabled selected>Select a category...</option>
+                    <option value="other">Other (add new)...</option>
+                </select>
+                <input type="text" id="form-category-other" placeholder="New category name (EN)" style="display:none; margin-top: 10px;">
+            </div>
+            
+            <div class="detail-card" id="subcategory-container" style="display:none;">
+                <h3>Subcategory</h3>
+                <select id="form-subcategory">
+                    <option value="" disabled selected>Select a subcategory...</option>
+                    <option value="other">Other (add new)...</option>
+                </select>
+                <input type="text" id="form-subcategory-other" placeholder="New subcategory name (EN)" style="display:none; margin-top: 10px;">
+            </div>
+
+            <div class="detail-card">
+                <h3>Description (EN)</h3>
+                <textarea id="form-desc-en" placeholder="Describe the aroma..."></textarea>
+            </div>
+            
+            <div class="detail-card">
+                <h3>Description (Italiano)</h3>
+                <textarea id="form-desc-it" placeholder="Descrivi l'aroma..."></textarea>
+            </div>
+            
+            <button type="submit" class="button-primary">Save Descriptor</button>
+            
+        </form>
+    </main>
+
+    <script src="js/config.js"></script> 
+    <script src="js/app.js"></script>
+</body>
+</html>

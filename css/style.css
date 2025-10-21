@@ -208,3 +208,41 @@ textarea {
         grid-template-columns: 1fr 1fr;
     }
 }
+
+/* Stili per il Form di Aggiunta */
+#add-descriptor-form input[type="text"],
+#add-descriptor-form textarea,
+#add-descriptor-form select {
+    width: 100%;
+    padding: 0.75rem;
+    font-size: 1rem;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    box-sizing: border-box; /* Importante per il padding */
+    background-color: #f9f9f9;
+}
+
+#add-descriptor-form textarea {
+    height: 100px;
+    font-family: inherit;
+}
+
+/* Stile per il pulsante di submit */
+.button-primary {
+    display: block;
+    width: 100%;
+    padding: 1rem;
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: #fff;
+    background-color: #007aff;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    text-align: center;
+    margin-top: 1rem;
+}
+
+.button-primary:hover {
+    background-color: #0056b3;
+}
