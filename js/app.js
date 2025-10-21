@@ -278,5 +278,21 @@ document.addEventListener("DOMContentLoaded", () => {
             link.classList.remove("active");
         }
     });
-
 });
+
+    // --- REGISTRAZIONE SERVICE WORKER ---
+    // Questo codice viene eseguito all'avvio
+
+    if ('serviceWorker' in navigator) {
+    // Aspetta che la pagina sia completamente caricata
+    window.addEventListener('load', ()_ => {
+        // Registra il nostro file sw.js
+        navigator.serviceWorker.register('sw.js')
+        .then((reg) => {
+            console.log('Service worker registrato con successo.', reg);
+        })
+        .catch((err) => {
+            console.error('Errore durante la registrazione del Service Worker:', err);
+        });
+    });
+    }
