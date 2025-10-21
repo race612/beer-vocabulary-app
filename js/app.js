@@ -1,52 +1,3 @@
-// --- DATABASE DEI DESCRITTORI ---
-// Questo è il nostro database statico dell'app
-const db = [
-    {
-        id: 1,
-        name: "Banana",
-        category: "Fruity",
-        translation: "Banana",
-        description: "Aroma di estere (acetato di isoamile) che ricorda le banane mature. Tipico di molte birre Weissbier bavaresi.",
-        sources: [
-            { name: "BJCP", url: "https://www.bjcp.org/" }
-        ]
-    },
-    {
-        id: 2,
-        name: "Clove",
-        category: "Spicy",
-        translation: "Chiodo di Garofano",
-        description: "Composto fenolico (4-vinil guaiacolo) che ricorda i chiodi di garofano. Caratteristica tipica di alcuni ceppi di lievito (es. Weizen).",
-        sources: [
-            { name: "The Beer Aroma Wheel", url: "#" }
-        ]
-    },
-    {
-        id: 3,
-        name: "Bread Crust",
-        category: "Malty",
-        translation: "Crosta di Pane",
-        description: "Aroma ricco, derivato dai malti tostati (es. Monaco, Vienna) che ricorda la crosta del pane appena sfornato.",
-        sources: []
-    },
-    {
-        id: 4,
-        name: "Grapefruit",
-        category: "Hoppy",
-        translation: "Pompelmo",
-        description: "Nota agrumata e resinosa tipica di molti luppoli americani (es. Cascade, Centennial), spesso dovuta a composti come il mircene.",
-        sources: []
-    },
-    {
-        id: 5,
-        name: "Caramel",
-        category: "Malty",
-        translation: "Caramello",
-        description: "Aroma dolce e ricco che può variare da caramella mou a zucchero bruciato, derivato da malti speciali caramellati.",
-        sources: []
-    }
-];
-
 // --- GESTIONE DATI UTENTE (localStorage) ---
 
 /**
@@ -277,6 +228,24 @@ document.addEventListener("DOMContentLoaded", () => {
             // Se l'ID non è valido o non trovato
             descriptorNameEl.textContent = "Errore";
             document.getElementById("desc-description").textContent = "Descrittore non trovato. Torna alla lista principale.";
+        }
+    }
+
+    // --- LOGICA PER LA PAGINA SETTINGS.HTML ---
+    const appVersionEl = document.getElementById("app-version-info");
+    if (appVersionEl) {
+        
+        // 1. Mostra la versione globale dell'app
+        appVersionEl.textContent = `App Version: ${APP_VERSION}`;
+        
+        // 2. Controlla lo stato del Service Worker
+        const cacheStatusEl = document.getElementById("cache-status-info");
+        if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+            // Se c'è un SW attivo, l'app è "cache-enabled"
+            // Mostriamo la versione della cache (che è la stessa dell'app)
+            cacheStatusEl.textContent = `Cache Status: Active (v${APP_VERSION})`;
+        } else {
+            cacheStatusEl.textContent = "Cache Status: Not Active (Online only)";
         }
     }
 

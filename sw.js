@@ -1,13 +1,23 @@
 // --- MODIFICA OBBLIGATORIA ---
-// Sostituisci con il nome del tuo repo
 const REPO_PREFIX = '/beer-vocabulary-app/'; 
 // ------------------------------
 
-// 1. INCREMENTA LA VERSIONE DELLA CACHE
-const CACHE_NAME = 'beer-vocab-cache-v4';
+// --- IMPORTA CONFIGURAZIONE ---
+// Percorso aggiornato a 'js/config.js'
+try {
+    importScripts(REPO_PREFIX + 'js/config.js');
+} catch (e) {
+    console.error('Impossibile importare config.js in sw.js', e);
+    importScripts('js/config.js'); 
+}
+// ------------------------------
+
+// Ora abbiamo accesso alla variabile 'APP_VERSION' definita in config.js
+
+const CACHE_NAME = `beer-vocab-cache-v${APP_VERSION}`; 
 
 const FILES_TO_CACHE = [
-  REPO_PREFIX,
+  REPO_PREFIX, 
   REPO_PREFIX + 'index.html',
   REPO_PREFIX + 'descriptor.html',
   REPO_PREFIX + 'categories.html',
@@ -15,30 +25,31 @@ const FILES_TO_CACHE = [
   REPO_PREFIX + 'css/style.css',
   REPO_PREFIX + 'js/app.js',
   REPO_PREFIX + 'manifest.json',
+  REPO_PREFIX + 'js/config.js',
+  // Icone
   REPO_PREFIX + 'images/icon-192x192.png',
   REPO_PREFIX + 'images/icon-256x256.png',
   REPO_PREFIX + 'images/icon-384x384.png',
   REPO_PREFIX + 'images/icon-512x512.png'
 ];
 
-// Evento "install"
+// --- Evento "install" ---
 self.addEventListener('install', (evt) => {
-  console.log('[ServiceWorker] Install v3');
-  
+  console.log(`[ServiceWorker] Install v${APP_VERSION}`);
   evt.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
       console.log('[ServiceWorker] Pre-caching app shell');
-      return cache.addAll(FILES_TO_CACHE);
+      return cache.addAll(FILES_TO_CACHE)
+        .catch(error => {
+            console.error('[ServiceWorker] Impossibile eseguire il pre-caching', error);
+        });
     })
   );
-  
-  // 2. RIMUOVI self.skipWaiting() DA QUI!
-  // Non lo vogliamo più automatico.
 });
 
-// Evento "activate" (invariato)
+// --- Evento "activate" ---
 self.addEventListener('activate', (evt) => {
-  console.log('[ServiceWorker] Activate');
+  console.log(`[ServiceWorker] Activate v${APP_VERSION}`);
   evt.waitUntil(
     caches.keys().then((keyList) => {
       return Promise.all(keyList.map((key) => {
@@ -52,16 +63,37 @@ self.addEventListener('activate', (evt) => {
   self.clients.claim();
 });
 
-// 3. AGGIUNGI QUESTO NUOVO BLOCCO
-// Questo listener aspetta il messaggio dal popup
+// --- Evento "message" ---
 self.addEventListener('message', (event) => {
   if (event.data && event.data.type === 'SKIP_WAITING') {
-    console.log('[ServiceWorker] Ricevuto comando SKIP_WAITING');
-    self.skipWaiting(); // Attiva il nuovo Service Worker
+    self.skipWaiting(); 
   }
 });
 
-// Evento "fetch" (invariato)
+// --- Evento "fetch" ---
 self.addEventListener('fetch', (evt) => {
-    // ... (il tuo codice 'fetch' rimane identico) ...
+    if (evt.request.method !== 'GET') {
+      return;
+    }
+    const requestUrl = new URL(evt.request.url);
+
+    // Logica per pagine "template" come descriptor.html
+    if (requestUrl.pathname.endsWith('/descriptor.html')) {
+        const templateRequest = new Request(REPO_PREFIX + 'descriptor.html');
+        evt.respondWith(
+            caches.match(templateRequest)
+                .then((response) => {
+                    return response || fetch(templateRequest);
+                })
+        );
+        return; 
+    }
+
+    // Logica standard (Cache First)
+    evt.respondWith(
+        caches.match(evt.request)
+            .then((response) => {
+                return response || fetch(evt.request);
+            })
+    );
 });

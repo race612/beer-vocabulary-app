@@ -5,27 +5,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Settings</title>
     <link rel="stylesheet" href="css/style.css">
-
+    
     <meta name="theme-color" content="#007aff">
     <link rel="manifest" href="manifest.json">
 </head>
 <body>
 
     <header>
-        <a href="index.html" class="back-button">&larr;</a>
-        <h1 id="desc-name">Settings</h1>
+        <h1>Settings</h1>
     </header>
 
     <main>
-        <h3>UNDER COSTRUCTION</h3>
-        <p>v4</p>
-    </main>
-    
-    <div id="update-popup" class="update-popup" style="display: none;">
-        <p>È disponibile una nuova versione!</p>
-        <button id="update-button">Aggiorna ora</button>
-    </div>
-    
+        <div class="detail-card">
+            <h3>App Info</h3>
+            <p id="app-version-info">Versione: ...</p>
+            <p id="cache-status-info">Stato Cache: ...</p>
+        </div>
+
+        </main>
+
     <footer>
         <nav>
             <a href="index.html" class="nav-item">Descriptors</a>
@@ -34,6 +32,12 @@
         </nav>
     </footer>
 
+    <div id="update-popup" class="update-popup" style="display: none;">
+        <p>È disponibile una nuova versione!</p>
+        <button id="update-button">Aggiorna ora</button>
+    </div>
+
+    <script src="js/config.js"></script>
     <script src="js/app.js"></script>
 </body>
 </html>
