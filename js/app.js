@@ -111,8 +111,26 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // --- LOGICA DI INIZIALIZZAZIONE (Solo per index.html) ---
     if (descriptorListContainer) {
-        // Applica filtri e ricerca all'avvio (mostra tutto)
-        applyFiltersAndSearch(); 
+        
+        // NUOVO: Controlla se arriviamo da un link di categoria (es. ?filter=Fruity)
+        const urlParams = new URLSearchParams(window.location.search);
+        const categoryFilter = urlParams.get('filter');
+
+        if (categoryFilter) {
+            currentCategory = categoryFilter; // Imposta il filtro
+            
+            // Aggiorna anche lo stile del pulsante filtro
+            filterButtons.forEach(btn => {
+                if (btn.textContent === categoryFilter) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+        }
+        
+        // Applica filtri e ricerca all'avvio (ora con il filtro pre-impostato)
+        applyFiltersAndSearch();
 
         // Aggiungi listener per la barra di ricerca
         searchBar.addEventListener("input", (event) => {
@@ -231,6 +249,26 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
+    // --- LOGICA PER LA PAGINA CATEGORIES.HTML ---
+    const categoryListContainer = document.querySelector(".category-list");
+
+    if (categoryListContainer) {
+        // 1. Estrai tutte le categorie uniche dal database
+        const allCategories = db.map(descriptor => descriptor.category);
+        const uniqueCategories = [...new Set(allCategories)]; // Rimuove i duplicati
+        uniqueCategories.sort(); // Ordina alfabeticamente
+
+        // 2. Popola la lista
+        uniqueCategories.forEach(category => {
+            const categoryHTML = `
+                <a href="index.html?filter=${category}" class="category-item">
+                    ${category}
+                </a>
+            `;
+            categoryListContainer.insertAdjacentHTML("beforeend", categoryHTML);
+        });
+    }
+
     // --- LOGICA PER LA PAGINA SETTINGS.HTML ---
 const appVersionEl = document.getElementById("app-version-info");
 
@@ -248,7 +286,7 @@ if (appVersionEl) { // Se siamo in settings.html
     if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
         // Se c'è un SW attivo, l'app è "cache-enabled"
         // Mostriamo la versione della cache (che è la stessa dell'app)
-        cacheStatusEl.textContent = `Cache Status: Active (v${APP_VERSION})`;
+        cacheStatusEl.textContent = `Cache Status: Active (App v${APP_VERSION} / DB v${DB_VERSION})`;
     } else {
         cacheStatusEl.textContent = "Cache Status: Not Active (Online only)";
     }

@@ -1,6 +1,6 @@
 // --- VERSIONE GLOBALE APP ---
 // Logica dell'app, file HTML/CSS/JS
-const APP_VERSION = "0.1.0";
+const APP_VERSION = "0.1.3";
 
 // --- VERSIONE DATABASE DESCRITTORI ---
 // Dati nel 'db' array

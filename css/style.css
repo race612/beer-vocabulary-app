@@ -176,3 +176,35 @@ textarea {
     border-radius: 5px;
     cursor: pointer;
 }
+
+/* Stili per la pagina Categorie */
+.category-list {
+    display: grid;
+    grid-template-columns: 1fr; /* Una colonna di default */
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.category-item {
+    display: block;
+    background-color: #fff;
+    padding: 1.5rem 1rem;
+    border-radius: 8px;
+    text-decoration: none;
+    color: inherit;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    font-size: 1.2rem;
+    font-weight: 500;
+    color: #007aff;
+}
+
+.category-item:active {
+    background-color: #f0f0f0;
+}
+
+/* Su schermi più grandi, potremmo volerle su 2 colonne */
+@media (min-width: 600px) {
+    .category-list {
+        grid-template-columns: 1fr 1fr;
+    }
+}
