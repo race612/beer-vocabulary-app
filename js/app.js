@@ -232,22 +232,27 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // --- LOGICA PER LA PAGINA SETTINGS.HTML ---
-    const appVersionEl = document.getElementById("app-version-info");
-    if (appVersionEl) {
-        
-        // 1. Mostra la versione globale dell'app
-        appVersionEl.textContent = `App Version: ${APP_VERSION}`;
-        
-        // 2. Controlla lo stato del Service Worker
-        const cacheStatusEl = document.getElementById("cache-status-info");
-        if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-            // Se c'è un SW attivo, l'app è "cache-enabled"
-            // Mostriamo la versione della cache (che è la stessa dell'app)
-            cacheStatusEl.textContent = `Cache Status: Active (v${APP_VERSION})`;
-        } else {
-            cacheStatusEl.textContent = "Cache Status: Not Active (Online only)";
-        }
+const appVersionEl = document.getElementById("app-version-info");
+
+if (appVersionEl) { // Se siamo in settings.html
+
+    // 1. Mostra la versione dell'app (da config.js)
+    appVersionEl.textContent = `App Version: ${APP_VERSION}`;
+
+    // 2. Mostra la versione del DB (da config.js)
+    const dbVersionEl = document.getElementById("db-version-info");
+    dbVersionEl.textContent = `Database Version: ${DB_VERSION}`;
+
+    // 3. Controlla lo stato del Service Worker
+    const cacheStatusEl = document.getElementById("cache-status-info");
+    if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+        // Se c'è un SW attivo, l'app è "cache-enabled"
+        // Mostriamo la versione della cache (che è la stessa dell'app)
+        cacheStatusEl.textContent = `Cache Status: Active (v${APP_VERSION})`;
+    } else {
+        cacheStatusEl.textContent = "Cache Status: Not Active (Online only)";
     }
+}
 
     // --- LOGICA PER LA BARRA DI NAVIGAZIONE (TUTTE LE PAGINE) ---
     // Recupera il nome del file della pagina attuale
