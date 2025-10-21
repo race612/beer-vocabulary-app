@@ -4,7 +4,7 @@ const REPO_PREFIX = '/beer-vocabulary-app/';
 // ------------------------------
 
 // 1. INCREMENTA LA VERSIONE DELLA CACHE
-const CACHE_NAME = 'beer-vocab-cache-v3'; // Da v2 a v3
+const CACHE_NAME = 'beer-vocab-cache-v4';
 
 const FILES_TO_CACHE = [
   REPO_PREFIX,
