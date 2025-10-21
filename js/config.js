@@ -1,10 +1,10 @@
 // --- VERSIONE GLOBALE APP ---
 // Incrementata per la nuova struttura dati i18n
-const APP_VERSION = "0.1.5"; 
+const APP_VERSION = "0.1.6"; 
 
 // --- VERSIONE DATABASE DESCRITTORI ---
 // Incrementata per la nuova struttura dati i18n
-const DB_VERSION = "0.0.5"; 
+const DB_VERSION = "0.0.6"; 
 
 // --- DIZIONARIO TRADUZIONI CATEGORIE ---
 // Questa è la nostra "fonte di verità" per i nomi
@@ -55,7 +55,6 @@ const db = [
     {
         id: 2,
         category_key: "spicy",
-        subcategory_key: "phenolic",
         translations: {
             en: { name: "Clove", description: "A phenolic compound (4-vinyl guaiacol) reminiscent of cloves." },
             it: { name: "Chiodo di Garofano", description: "Composto fenolico (4-vinil guaiacolo) che ricorda i chiodi di garofano." }

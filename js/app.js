@@ -165,29 +165,31 @@ document.addEventListener("DOMContentLoaded", () => {
             // --- Logica Traduzione ---
             const main = descriptor.translations[INTERFACE_LANG];
             const secondary = descriptor.translations[SECONDARY_LANG];
+            
+            // 1. Traduci la Categoria Principale
             const categoryName = categoryTranslations[descriptor.category_key][INTERFACE_LANG];
             
+            // 2. Cerca e Traduci la Sottocategoria (se esiste)
             let subcategoryName = "";
             if (descriptor.subcategory_key && categoryTranslations[descriptor.subcategory_key]) {
                 subcategoryName = categoryTranslations[descriptor.subcategory_key][INTERFACE_LANG];
             }
-            // --- Fine ---
+            
+            // 3. Crea la stringa di visualizzazione finale
+            let categoryDisplayString = categoryName; // Default
+            if (subcategoryName) {
+                categoryDisplayString = `${categoryName} > ${subcategoryName}`;
+            }
+            // --- Fine Logica Traduzione ---
 
+            // Popola Header e Titolo
             document.title = main.name;
             descriptorNameEl.textContent = main.name;
             
+            // Popola le card
             document.getElementById("desc-translation").textContent = secondary.name;
-            document.getElementById("desc-category").textContent = categoryName;
+            document.getElementById("desc-category").textContent = categoryDisplayString; // <-- USA LA STRINGA COMBINATA
             document.getElementById("desc-description").textContent = main.description;
-
-            // Logica Sottocategoria (come prima)
-            const subcategoryCard = document.getElementById("subcategory-card");
-            if (subcategoryName) {
-                document.getElementById("desc-subcategory").textContent = subcategoryName;
-                subcategoryCard.style.display = "block";
-            } else {
-                subcategoryCard.style.display = "none";
-            }
 
             // Logica Fonti (come prima)
             const sourcesListEl = document.getElementById("desc-sources");
