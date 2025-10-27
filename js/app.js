@@ -106,16 +106,24 @@ document.addEventListener("DOMContentLoaded", () => {
             const showAll = appSettings.showAllTranslations;
 
             // Dati primari
-            const name = descriptor.translations[pLang].name;
-            const categoryName = categoryTranslations[descriptor.category_key][pLang];
+            const pName = descriptor.translations[pLang].name;
+            const pCategory = categoryTranslations[descriptor.category_key][pLang];
             
             // Dati secondari (opzionali)
-            let secondaryHTML = '';
+            let nameHTML = `<h2>${pName}</h2>`;
+            let categoryHTML = `<p>${pCategory}</p>`;
+
             if (sLang !== 'none' && showAll) {
-                const secondaryName = descriptor.translations[sLang].name;
-                // Mostra anche la categoria secondaria
-                const secondaryCategory = categoryTranslations[descriptor.category_key][sLang];
-                secondaryHTML = `<p class="secondary-translation" style="margin-top: 0; margin-bottom: 5px;">${secondaryName} (${secondaryCategory})</p>`;
+                const sName = descriptor.translations[sLang].name;
+                const sCategory = categoryTranslations[descriptor.category_key][sLang];
+
+                // Aggiungi la traduzione inline SOLO se è diversa
+                if (pName !== sName) {
+                    nameHTML = `<h2>${pName} <span class="inline-secondary-translation">(${sName})</span></h2>`;
+                }
+                if (pCategory !== sCategory) {
+                    categoryHTML = `<p>${pCategory} <span class="inline-secondary-translation">(${sCategory})</span></p>`;
+                }
             }
 
             // Dati utente
@@ -131,9 +139,8 @@ document.addEventListener("DOMContentLoaded", () => {
             const itemHTML = `
                 <a href="descriptor.html?id=${descriptor.id}" class="descriptor-item">
                     <div class="item-content">
-                        <h2>${name}</h2>
-                        <p style="margin-top: 5px;">${categoryName}</p>
-                        ${secondaryHTML}
+                        ${nameHTML}
+                        ${categoryHTML}
                     </div>
                     <div class="item-confidence" data-level="${confidenceData}">
                         ${confidenceLevel}
@@ -277,38 +284,48 @@ document.addEventListener("DOMContentLoaded", () => {
 
             // LOGICA SECONDARIA (come da tua richiesta)
             if (sLang !== 'none') {
-                // Card Traduzione
-                translationCard.style.display = "block";
-                translationEl.textContent = sData.name;
+                // (La logica per 'translationCard' è stata rimossa)
                 
-                // Mostra traduzione secondaria per Titolo (sotto H1)
-                nameSecondaryEl.textContent = sData.name;
-                nameSecondaryEl.style.display = "block";
+                // Mostra traduzione secondaria per Titolo (sotto H1) SOLO SE DIVERSA
+                if (pData.name !== sData.name) {
+                    nameSecondaryEl.textContent = sData.name;
+                    nameSecondaryEl.style.display = "block";
+                } else {
+                    nameSecondaryEl.style.display = "none"; // Nascondi se uguale
+                }
                 
-                // Mostra traduzione secondaria per Categoria
+                // Mostra traduzione secondaria per Categoria SOLO SE DIVERSA
+                const pCategoryString = pSubcategory ? `${pCategory} > ${pSubcategory}` : pCategory;
                 const sCategoryString = sSubcategory ? `${sCategory} > ${sSubcategory}` : sCategory;
-                categorySecondaryEl.textContent = sCategoryString;
-                categorySecondaryEl.style.display = "block";
                 
-                // Attiva il Toggle Descrizione
-                descriptionToggleEl.style.display = "block";
-                descriptionSecondaryEl.textContent = sData.description; // Carica dati secondari
-                let isShowingPrimary = true;
+                if (pCategoryString !== sCategoryString) {
+                    categorySecondaryEl.textContent = sCategoryString;
+                    categorySecondaryEl.style.display = "block";
+                } else {
+                    categorySecondaryEl.style.display = "none"; // Nascondi se uguale
+                }
                 
-                descriptionToggleEl.addEventListener('click', () => {
-                    isShowingPrimary = !isShowingPrimary;
-                    descriptionPrimaryEl.style.display = isShowingPrimary ? 'block' : 'none';
-                    descriptionSecondaryEl.style.display = isShowingPrimary ? 'none' : 'block';
+                // Attiva il Toggle Descrizione SOLO SE DIVERSA
+                if (pData.description !== sData.description) {
+                    descriptionToggleEl.style.display = "block";
+                    descriptionSecondaryEl.textContent = sData.description; // Carica dati secondari
+                    let isShowingPrimary = true;
                     
-                    // Aggiorna testo del pulsante
-                    const toggleKey = isShowingPrimary ? "descriptor_toggle_description" : (pLang === 'en' ? "Show Original (EN)" : "Mostra Originale (IT)");
-                    // Aggiungiamo un fallback
-                    descriptionToggleEl.textContent = uiStrings[toggleKey] ? uiStrings[toggleKey][pLang] : (isShowingPrimary ? "Show Translation" : "Show Original");
-                });
+                    descriptionToggleEl.addEventListener('click', () => {
+                        isShowingPrimary = !isShowingPrimary;
+                        descriptionPrimaryEl.style.display = isShowingPrimary ? 'block' : 'none';
+                        descriptionSecondaryEl.style.display = isShowingPrimary ? 'none' : 'block';
+                        
+                        // Aggiorna testo del pulsante
+                        const toggleKey = isShowingPrimary ? "descriptor_toggle_description" : (pLang === 'en' ? "Show Original (EN)" : "Mostra Originale (IT)");
+                        descriptionToggleEl.textContent = uiStrings[toggleKey] ? uiStrings[toggleKey][pLang] : (isShowingPrimary ? "Show Translation" : "Show Original");
+                    });
+                } else {
+                    descriptionToggleEl.style.display = "none"; // Nascondi se uguale
+                }
 
             } else {
-                // Nascondi tutti gli elementi secondari
-                translationCard.style.display = "none";
+                // Nascondi tutti gli elementi secondari se sLang è 'none'
                 nameSecondaryEl.style.display = "none";
                 categorySecondaryEl.style.display = "none";
                 descriptionToggleEl.style.display = "none";
