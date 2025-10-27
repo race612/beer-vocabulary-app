@@ -21,6 +21,7 @@ const FILES_TO_CACHE = [
   REPO_PREFIX + 'descriptor.html',
   REPO_PREFIX + 'categories.html',
   REPO_PREFIX + 'settings.html',
+  REPO_PREFIX + 'search.html',
   REPO_PREFIX + 'css/style.css',
   REPO_PREFIX + 'js/app.js',
   REPO_PREFIX + 'manifest.json',

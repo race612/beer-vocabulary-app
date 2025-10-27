@@ -100,9 +100,8 @@ document.addEventListener("DOMContentLoaded", () => {
         renderDescriptorList(filteredDb);
     }
     
-    /**
-     * NUOVA FUNZIONE: Genera i pulsanti filtro
-     */
+    
+    // NUOVA FUNZIONE: Genera i pulsanti filtro (Ora per la pagina Search)
     function renderFilterButtons() {
         if (!filterContainer) return;
         
@@ -126,30 +125,46 @@ document.addEventListener("DOMContentLoaded", () => {
                 button.classList.add("active");
 
                 applyFiltersAndSearch();
+                
+                // Nascondi/mostra il messaggio di default
+                const prompt = document.getElementById("search-prompt");
+                if (prompt) {
+                    prompt.style.display = (currentSearchTerm.length > 0 || currentCategoryKey !== 'all') ? 'none' : 'block';
+                }
             });
         });
     }
 
-
     // --- LOGICA DI INIZIALIZZAZIONE (Solo per index.html) ---
-    if (descriptorListContainer) {
+    // Questo blocco ora si attiva solo se trova la lista MA NON la barra di ricerca
+    if (descriptorListContainer && !searchBar) {
+        
+        // La Home Page ora mostra semplicemente TUTTI i descrittori
+        applyFiltersAndSearch(); 
+    }
+
+    // --- NUOVA LOGICA (Solo per search.html) ---
+    // Questo blocco si attiva solo se trova la barra di ricerca
+    if (searchBar) {
         
         // 1. Crea i pulsanti filtro
         renderFilterButtons();
         
-        // (La vecchia logica per ?filter= dall'URL è stata rimossa per semplicità,
-        // la reintrodurremo con la pagina Categorie)
-        
-        // 2. Mostra la lista iniziale
-        applyFiltersAndSearch(); 
-
-        // 3. Aggiungi listener per la barra di ricerca
+        // 2. Aggiungi listener per la barra di ricerca
         searchBar.addEventListener("input", (event) => {
             currentSearchTerm = event.target.value;
-            applyFiltersAndSearch();
+            applyFiltersAndSearch(); // Ridisegna la lista ad ogni lettera digitata
+            
+            // Nascondi/mostra il messaggio di default
+            const prompt = document.getElementById("search-prompt");
+            if (prompt) {
+                prompt.style.display = (currentSearchTerm.length > 0 || currentCategoryKey !== 'all') ? 'none' : 'block';
+            }
         });
+        
+        // 3. Modifica i listener dei filtri per la pagina di ricerca
+        // (Dobbiamo ridefinire 'renderFilterButtons' per includere questa logica)
     }
-
 
     // --- LOGICA PER LA PAGINA DESCRIPTOR.HTML ---
     const descriptorNameEl = document.getElementById("desc-name");

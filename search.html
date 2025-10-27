@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Descriptors</title>
+    <link rel="stylesheet" href="css/style.css">
+    
+    <meta name="theme-color" content="#007aff">
+    <link rel="manifest" href="manifest.json">
+</head>
+<body>
+
+    <header>
+        <a href="index.html" class="back-button">&larr;</a>
+        <h1>Search</h1>
+    </header>
+
+    <main id="search-page-main">
+        <div class="search-container">
+            <input type="search" id="search-bar-input" placeholder="Type to search..." autofocus>
+        </div>
+        
+        <div class="filters-container">
+            </div>
+
+        <div class="descriptor-list">
+             <p class="no-results" id="search-prompt">Start typing to find descriptors.</p>
+        </div>
+    </main>
+
+    <footer>
+        <nav>
+            <a href="index.html" class="nav-item">Descriptors</a>
+            <a href="categories.html" class="nav-item">Categories</a>
+            <a href="settings.html" class="nav-item">Settings</a>
+        </nav>
+    </footer>
+
+    <div id="update-popup" class="update-popup" style="display: none;">
+        <p>È disponibile una nuova versione!</p>
+        <button id="update-button">Aggiorna ora</button>
+    </div>
+
+    <script src="js/config.js"></script> 
+    <script src="js/app.js"></script>
+</body>
+</html>
