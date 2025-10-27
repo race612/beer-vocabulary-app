@@ -1,6 +1,6 @@
 // --- VERSIONE GLOBALE APP ---
 // Incrementata per la nuova struttura dati i18n
-const APP_VERSION = "0.1.81"; 
+const APP_VERSION = "0.1.9"; 
 
 // --- VERSIONE DATABASE DESCRITTORI ---
 // Incrementata per la nuova struttura dati i18n
