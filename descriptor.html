@@ -14,44 +14,47 @@
     <header>
         <a href="index.html" class="back-button">&larr;</a>
         <h1 id="desc-name">...</h1>
+        <p id="desc-name-secondary" class="secondary-translation" style="display: none;"></p>
     </header>
 
     <main>
-    <div class="detail-card">
-        <h3>Translation (Italian)</h3>
-        <p id="desc-translation">...</p>
-    </div>
-
-    <div class="detail-card">
-        <h3>Category</h3>
-        <p id="desc-category">...</p>
-    </div>
-    
-    <div class="detail-card">
-        <h3>Description</h3>
-        <p id="desc-description">...</p>
-    </div>
-
-    <div class="detail-card">
-        <h3>Sources & Documents</h3>
-        <ul id="desc-sources">
-            </ul>
-    </div>
-    
-    <div class="detail-card">
-        <h3>My Confidence Level</h3>
-        <div class="slider-container">
-            <span id="slider-label">Not yet set</span>
-            <input type="range" min="1" max="10" value="1" class="slider" id="desc-slider">
-            <span class="slider-value" id="desc-slider-value">1</span>
+        <div class="detail-card" id="translation-card" style="display: none;">
+            <h3 id="desc-translation-label" data-translate-key="descriptor_translation">Translation</h3>
+            <p id="desc-translation">...</p>
         </div>
-    </div>
 
-    <div class="detail-card">
-        <h3>My Personal Notes</h3>
-        <textarea id="desc-notes" placeholder="Write your personal notes here..."></textarea>
-    </div>
-</main>
+        <div class="detail-card">
+            <h3 data-translate-key="descriptor_category">Category</h3>
+            <p id="desc-category">...</p>
+            <p id="desc-category-secondary" class="secondary-translation" style="display: none;"></p>
+        </div>
+        
+        <div class="detail-card">
+            <h3 data-translate-key="descriptor_description">Description</h3>
+            <p id="desc-description-primary">...</p>
+            <p id="desc-description-secondary" style="display: none;"></p>
+            <button id="desc-description-toggle" class="description-toggle" style="display: none;" data-translate-key="descriptor_toggle_description">Show translation</button>
+        </div>
+        
+        <div class="detail-card">
+            <h3 data-translate-key="descriptor_sources">Sources & Documents</h3>
+            <ul id="desc-sources"></ul>
+        </div>
+        
+        <div class="detail-card">
+            <h3 data-translate-key="descriptor_confidence">My Confidence Level</h3>
+            <div class="slider-container">
+                <span id="slider-label" data-translate-key="descriptor_confidence_not_set">Not yet set</span>
+                <input type="range" min="1" max="10" value="1" class="slider" id="desc-slider">
+                <span class="slider-value" id="desc-slider-value">1</span>
+            </div>
+        </div>
+
+        <div class="detail-card">
+            <h3 data-translate-key="descriptor_notes">My Personal Notes</h3>
+            <textarea id="desc-notes" data-translate-key-placeholder="descriptor_notes_placeholder" placeholder="Write your personal notes here..."></textarea>
+        </div>
+    </main>
     
     <div id="update-popup" class="update-popup" style="display: none;">
         <p>È disponibile una nuova versione!</p>
@@ -59,10 +62,10 @@
     </div>
 
     <footer>
-        <nav>
-            <a href="index.html" class="nav-item">Descriptors</a>
-            <a href="categories.html" class="nav-item">Categories</a>
-            <a href="settings.html" class="nav-item">Settings</a>
+       <nav>
+            <a href="index.html" class="nav-item" data-translate-key="nav_descriptors">Descriptors</a>
+            <a href="categories.html" class="nav-item" data-translate-key="nav_categories">Categories</a>
+            <a href="settings.html" class="nav-item" data-translate-key="nav_settings">Settings</a>
         </nav>
     </footer>
 

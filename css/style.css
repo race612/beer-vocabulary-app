@@ -253,3 +253,56 @@ textarea {
 .button-primary:hover {
     background-color: #0056b3;
 }
+
+/* Stili per la pagina Impostazioni */
+.setting-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+}
+.setting-item label {
+    font-size: 1rem;
+    margin-right: 1rem;
+}
+.setting-item select {
+    font-size: 1rem;
+    padding: 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+}
+
+.setting-item-checkbox {
+    display: flex;
+    align-items: center;
+    padding: 0.5rem 0;
+}
+.setting-item-checkbox input {
+    margin-right: 0.75rem;
+    /* Rende la checkbox più grande e facile da toccare */
+    transform: scale(1.2);
+}
+
+/* Stile per le traduzioni secondarie (sotto il titolo) */
+.secondary-translation {
+    font-size: 0.9rem;
+    font-style: italic;
+    color: #555;
+    margin: -5px 0 10px 0;
+    /* Aggiunto per coerenza con l'header della pagina dettaglio */
+    margin-top: -15px; 
+    margin-bottom: 10px;
+}
+
+/* Stile per il toggle della descrizione */
+.description-toggle {
+    font-size: 0.9rem;
+    color: #007aff;
+    background: none;
+    border: none;
+    padding: 5px 0;
+    cursor: pointer;
+    display: block; /* Lo mettiamo su una riga sua */
+    margin-top: 5px;
+}

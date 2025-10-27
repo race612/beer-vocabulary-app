@@ -1,8 +1,60 @@
-// --- IMPOSTAZIONE LINGUA ---
-// Come da tua richiesta, l'interfaccia di default è Inglese
-const INTERFACE_LANG = 'en';
-const SECONDARY_LANG = 'it';
-// ------------------------------
+// --- IMPOSTAZIONI GLOBALI APP ---
+let appSettings = {};
+const defaultSettings = {
+    primaryLang: 'en',
+    secondaryLang: 'it',
+    showAllTranslations: false
+};
+
+/**
+ * Carica le impostazioni da localStorage o usa i default
+ */
+function loadAppSettings() {
+    const savedSettings = localStorage.getItem('beerAppSettings');
+    appSettings = savedSettings ? JSON.parse(savedSettings) : defaultSettings;
+}
+
+/**
+ * Salva le impostazioni correnti in localStorage
+ */
+function saveAppSettings() {
+    localStorage.setItem('beerAppSettings', JSON.stringify(appSettings));
+}
+
+// Carica le impostazioni SUBITO, prima che la pagina si disegni
+loadAppSettings();
+
+/**
+ * Funzione Globale per Tradurre la UI
+ * Trova tutti gli elementi con [data-translate-key] e li traduce
+ */
+function translateUI() {
+    const lang = appSettings.primaryLang;
+    
+    document.querySelectorAll('[data-translate-key]').forEach(el => {
+        const key = el.dataset.translateKey;
+        if (uiStrings[key] && uiStrings[key][lang]) {
+            el.textContent = uiStrings[key][lang];
+        }
+    });
+    
+    // Gestisce i placeholder
+    document.querySelectorAll('[data-translate-key-placeholder]').forEach(el => {
+        const key = el.dataset.translateKeyPlaceholder;
+         if (uiStrings[key] && uiStrings[key][lang]) {
+            el.placeholder = uiStrings[key][lang];
+        }
+    });
+
+    // Gestione speciale per la label "Translation"
+    const transLabel = document.getElementById("desc-translation-label");
+    if (transLabel) {
+        if (appSettings.secondaryLang !== 'none') {
+            const otherLangKey = appSettings.secondaryLang === 'en' ? 'English' : 'Italiano';
+            transLabel.textContent = `${uiStrings["descriptor_translation"][lang]} (${otherLangKey})`;
+        }
+    }
+}
 
 
 // --- GESTIONE DATI UTENTE (localStorage) ---
@@ -21,32 +73,53 @@ let userData = loadUserData();
 document.addEventListener("DOMContentLoaded", () => {
     
     console.log("App JavaScript caricata!");
+    
+    // TRADUCI LA UI DINAMICAMENTE
+    translateUI();
 
-    // --- SELETTORI GLOBALI (per index.html) ---
+    // --- SELETTORI GLOBALI ---
     const descriptorListContainer = document.querySelector(".descriptor-list");
     const searchBar = document.querySelector('input[type="search"]');
-    const filterContainer = document.querySelector(".filters-container"); // Aggiornato
+    const filterContainer = document.querySelector(".filters-container");
 
-    // Stato attuale dei filtri
-    let currentCategoryKey = "all"; // Ora usiamo la chiave
+    // Stato filtri
+    let currentCategoryKey = "all";
     let currentSearchTerm = "";
-    let currentSubcategoryKey = ""; // Non ancora usato, ma pronto
 
     /**
-     * Funzione per renderizzare la lista dei descrittori (index.html)
+     * Renderizza la lista descrittori (Home / Search)
      */
     function renderDescriptorList(descriptors) {
         if (!descriptorListContainer) return; 
         descriptorListContainer.innerHTML = "";
         
+        const noResultsMessage = uiStrings["search_prompt"][appSettings.primaryLang] || "No descriptors found.";
         if (descriptors.length === 0) {
-            descriptorListContainer.innerHTML = "<p class='no-results'>Nessun descrittore trovato.</p>";
+            descriptorListContainer.innerHTML = `<p class='no-results'>${noResultsMessage}</p>`;
             return;
         }
 
         descriptors.forEach(descriptor => {
-            const userEntry = userData[descriptor.id];
+            // Lingue
+            const pLang = appSettings.primaryLang;
+            const sLang = appSettings.secondaryLang;
+            const showAll = appSettings.showAllTranslations;
+
+            // Dati primari
+            const name = descriptor.translations[pLang].name;
+            const categoryName = categoryTranslations[descriptor.category_key][pLang];
             
+            // Dati secondari (opzionali)
+            let secondaryHTML = '';
+            if (sLang !== 'none' && showAll) {
+                const secondaryName = descriptor.translations[sLang].name;
+                // Mostra anche la categoria secondaria
+                const secondaryCategory = categoryTranslations[descriptor.category_key][sLang];
+                secondaryHTML = `<p class="secondary-translation" style="margin-top: 0; margin-bottom: 5px;">${secondaryName} (${secondaryCategory})</p>`;
+            }
+
+            // Dati utente
+            const userEntry = userData[descriptor.id];
             let confidenceLevel = "--";
             let confidenceData = "not-set";
             
@@ -55,16 +128,12 @@ document.addEventListener("DOMContentLoaded", () => {
                 confidenceData = userEntry.confidence;
             }
 
-            // --- Logica Traduzione ---
-            const name = descriptor.translations[INTERFACE_LANG].name;
-            const categoryName = categoryTranslations[descriptor.category_key][INTERFACE_LANG];
-            // --- Fine ---
-
             const itemHTML = `
                 <a href="descriptor.html?id=${descriptor.id}" class="descriptor-item">
                     <div class="item-content">
                         <h2>${name}</h2>
-                        <p>${categoryName}</p>
+                        <p style="margin-top: 5px;">${categoryName}</p>
+                        ${secondaryHTML}
                     </div>
                     <div class="item-confidence" data-level="${confidenceData}">
                         ${confidenceLevel}
@@ -76,169 +145,193 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     /**
-     * Funzione che applica i filtri e la ricerca correnti
+     * Applica filtri e ricerca
      */
     function applyFiltersAndSearch() {
         let filteredDb = db; 
+        const pLang = appSettings.primaryLang;
+        const sLang = appSettings.secondaryLang;
 
-        // 1. Filtra per Categoria (ora usa la chiave)
         if (currentCategoryKey !== "all") {
             filteredDb = filteredDb.filter(descriptor => 
                 descriptor.category_key === currentCategoryKey
             );
         }
 
-        // 2. Filtra per Ricerca
         const searchTerm = currentSearchTerm.toLowerCase();
         if (searchTerm !== "") {
             filteredDb = filteredDb.filter(descriptor => 
-                descriptor.translations[INTERFACE_LANG].name.toLowerCase().includes(searchTerm) ||
-                descriptor.translations[SECONDARY_LANG].name.toLowerCase().includes(searchTerm)
+                descriptor.translations[pLang].name.toLowerCase().includes(searchTerm) ||
+                (sLang !== 'none' && descriptor.translations[sLang].name.toLowerCase().includes(searchTerm))
             );
         }
 
         renderDescriptorList(filteredDb);
     }
     
-    
-    // NUOVA FUNZIONE: Genera i pulsanti filtro (Ora per la pagina Search)
+    /**
+     * Genera i pulsanti filtro
+     */
     function renderFilterButtons() {
         if (!filterContainer) return;
         
-        // 1. Pulsante "All"
-        filterContainer.innerHTML = '<button class="filter-btn active" data-key="all">All</button>';
+        const pLang = appSettings.primaryLang;
+        filterContainer.innerHTML = `<button class="filter-btn active" data-key="all">${uiStrings["search_all"][pLang]}</button>`;
         
-        // 2. Pulsanti dinamici
         appCategories.forEach(category => {
-            const translatedName = categoryTranslations[category.key][INTERFACE_LANG];
+            const translatedName = categoryTranslations[category.key][pLang];
             const buttonHTML = `<button class="filter-btn" data-key="${category.key}">${translatedName}</button>`;
             filterContainer.insertAdjacentHTML("beforeend", buttonHTML);
         });
         
-        // 3. Aggiungi i listener
         const filterButtons = document.querySelectorAll(".filter-btn");
         filterButtons.forEach(button => {
             button.addEventListener("click", () => {
-                currentCategoryKey = button.dataset.key; // Legge la chiave (es. "fruity")
-                
+                currentCategoryKey = button.dataset.key;
                 filterButtons.forEach(btn => btn.classList.remove("active"));
                 button.classList.add("active");
-
                 applyFiltersAndSearch();
                 
-                // Nascondi/mostra il messaggio di default
                 const prompt = document.getElementById("search-prompt");
                 if (prompt) {
-                    prompt.style.display = (currentSearchTerm.length > 0 || currentCategoryKey !== 'all') ? 'none' : 'block';
+                    prompt.style.display = 'none';
                 }
             });
         });
     }
 
-    // --- LOGICA DI INIZIALIZZAZIONE (Solo per index.html) ---
-    // Questo blocco ora si attiva solo se trova la lista MA NON la barra di ricerca
+    // --- LOGICA HOME (index.html) ---
     if (descriptorListContainer && !searchBar) {
-        
-        // La Home Page ora mostra semplicemente TUTTI i descrittori
         applyFiltersAndSearch(); 
     }
 
-    // --- NUOVA LOGICA (Solo per search.html) ---
-    // Questo blocco si attiva solo se trova la barra di ricerca
+    // --- LOGICA SEARCH (search.html) ---
     if (searchBar) {
-        
-        // 1. Crea i pulsanti filtro
         renderFilterButtons();
         
-        // 2. Aggiungi listener per la barra di ricerca
         searchBar.addEventListener("input", (event) => {
             currentSearchTerm = event.target.value;
-            applyFiltersAndSearch(); // Ridisegna la lista ad ogni lettera digitata
+            applyFiltersAndSearch();
             
-            // Nascondi/mostra il messaggio di default
             const prompt = document.getElementById("search-prompt");
             if (prompt) {
                 prompt.style.display = (currentSearchTerm.length > 0 || currentCategoryKey !== 'all') ? 'none' : 'block';
             }
         });
-        
-        // 3. Modifica i listener dei filtri per la pagina di ricerca
-        // (Dobbiamo ridefinire 'renderFilterButtons' per includere questa logica)
     }
 
-    // --- LOGICA PER LA PAGINA DESCRIPTOR.HTML ---
+    // --- LOGICA DETTAGLIO (descriptor.html) ---
     const descriptorNameEl = document.getElementById("desc-name");
-
     if (descriptorNameEl) {
         
         const urlParams = new URLSearchParams(window.location.search);
         const descriptorId = parseInt(urlParams.get('id'));
         const descriptor = db.find(d => d.id === descriptorId);
         const userEntry = userData[descriptorId] || {}; 
+        
+        // Seleziona elementi UI
+        const nameSecondaryEl = document.getElementById("desc-name-secondary");
+        const categoryEl = document.getElementById("desc-category");
+        const categorySecondaryEl = document.getElementById("desc-category-secondary");
+        const translationCard = document.getElementById("translation-card");
+        const translationEl = document.getElementById("desc-translation");
+        const descriptionPrimaryEl = document.getElementById("desc-description-primary");
+        const descriptionSecondaryEl = document.getElementById("desc-description-secondary");
+        const descriptionToggleEl = document.getElementById("desc-description-toggle");
+        const confidenceLabelEl = document.getElementById("slider-label");
+        const notesTextarea = document.getElementById("desc-notes");
 
         if (descriptor) {
-            // --- Logica Traduzione ---
-            const main = descriptor.translations[INTERFACE_LANG];
-            const secondary = descriptor.translations[SECONDARY_LANG];
-            
-            // 1. Traduci la Categoria Principale
-            const categoryName = categoryTranslations[descriptor.category_key][INTERFACE_LANG];
-            
-            // 2. Cerca e Traduci la Sottocategoria (se esiste)
-            let subcategoryName = "";
+            const pLang = appSettings.primaryLang;
+            const sLang = appSettings.secondaryLang;
+
+            // Dati primari
+            const pData = descriptor.translations[pLang];
+            const pCategory = categoryTranslations[descriptor.category_key][pLang];
+            let pSubcategory = "";
             if (descriptor.subcategory_key && categoryTranslations[descriptor.subcategory_key]) {
-                subcategoryName = categoryTranslations[descriptor.subcategory_key][INTERFACE_LANG];
+                pSubcategory = categoryTranslations[descriptor.subcategory_key][pLang];
             }
-            
-            // 3. Crea la stringa di visualizzazione finale
-            let categoryDisplayString = categoryName; // Default
-            if (subcategoryName) {
-                categoryDisplayString = `${categoryName} > ${subcategoryName}`;
+
+            // Dati secondari (se esistono)
+            let sData, sCategory, sSubcategory;
+            if (sLang !== 'none') {
+                sData = descriptor.translations[sLang];
+                sCategory = categoryTranslations[descriptor.category_key][sLang];
+                if (descriptor.subcategory_key && categoryTranslations[descriptor.subcategory_key]) {
+                    sSubcategory = categoryTranslations[descriptor.subcategory_key][sLang];
+                }
             }
-            // --- Fine Logica Traduzione ---
 
-            // Popola Header e Titolo
-            document.title = main.name;
-            descriptorNameEl.textContent = main.name;
+            // --- POPOLA UI ---
             
-            // Popola le card
-            document.getElementById("desc-translation").textContent = secondary.name;
-            document.getElementById("desc-category").textContent = categoryDisplayString; // <-- USA LA STRINGA COMBINATA
-            document.getElementById("desc-description").textContent = main.description;
+            // Titolo
+            document.title = pData.name;
+            descriptorNameEl.textContent = pData.name;
+            
+            // Categoria
+            categoryEl.textContent = pSubcategory ? `${pCategory} > ${pSubcategory}` : pCategory;
 
-            // Logica Fonti (come prima)
-            const sourcesListEl = document.getElementById("desc-sources");
-            sourcesListEl.innerHTML = "";
-            if (descriptor.sources.length > 0) {
-                descriptor.sources.forEach(source => {
-                    sourcesListEl.innerHTML += `<li><a href="${source.url}" target="_blank">${source.name}</a></li>`;
+            // Descrizione (mostra primaria di default)
+            descriptionPrimaryEl.textContent = pData.description;
+
+            // LOGICA SECONDARIA (come da tua richiesta)
+            if (sLang !== 'none') {
+                // Card Traduzione
+                translationCard.style.display = "block";
+                translationEl.textContent = sData.name;
+                
+                // Mostra traduzione secondaria per Titolo (sotto H1)
+                nameSecondaryEl.textContent = sData.name;
+                nameSecondaryEl.style.display = "block";
+                
+                // Mostra traduzione secondaria per Categoria
+                const sCategoryString = sSubcategory ? `${sCategory} > ${sSubcategory}` : sCategory;
+                categorySecondaryEl.textContent = sCategoryString;
+                categorySecondaryEl.style.display = "block";
+                
+                // Attiva il Toggle Descrizione
+                descriptionToggleEl.style.display = "block";
+                descriptionSecondaryEl.textContent = sData.description; // Carica dati secondari
+                let isShowingPrimary = true;
+                
+                descriptionToggleEl.addEventListener('click', () => {
+                    isShowingPrimary = !isShowingPrimary;
+                    descriptionPrimaryEl.style.display = isShowingPrimary ? 'block' : 'none';
+                    descriptionSecondaryEl.style.display = isShowingPrimary ? 'none' : 'block';
+                    
+                    // Aggiorna testo del pulsante
+                    const toggleKey = isShowingPrimary ? "descriptor_toggle_description" : (pLang === 'en' ? "Show Original (EN)" : "Mostra Originale (IT)");
+                    // Aggiungiamo un fallback
+                    descriptionToggleEl.textContent = uiStrings[toggleKey] ? uiStrings[toggleKey][pLang] : (isShowingPrimary ? "Show Translation" : "Show Original");
                 });
+
             } else {
-                sourcesListEl.innerHTML = "<li>Nessuna fonte specificata.</li>";
+                // Nascondi tutti gli elementi secondari
+                translationCard.style.display = "none";
+                nameSecondaryEl.style.display = "none";
+                categorySecondaryEl.style.display = "none";
+                descriptionToggleEl.style.display = "none";
             }
             
-            // Logica Note e Slider (invariata, gestisce solo i dati utente)
-            const notesTextarea = document.getElementById("desc-notes");
-            notesTextarea.value = userEntry.notes || "";
-            
+            // Logica Note e Slider (con traduzione)
             const slider = document.getElementById("desc-slider");
             const sliderValue = document.getElementById("desc-slider-value");
-            const sliderLabel = document.getElementById("slider-label");
             
             if (userEntry.confidence) {
                 slider.value = userEntry.confidence;
                 sliderValue.textContent = userEntry.confidence;
-                sliderLabel.textContent = "Your rating:";
+                confidenceLabelEl.textContent = uiStrings["descriptor_confidence_set"][pLang];
             } else {
                 slider.value = 1; 
                 sliderValue.textContent = "1";
-                sliderLabel.textContent = "Not yet set";
+                confidenceLabelEl.textContent = uiStrings["descriptor_confidence_not_set"][pLang];
             }
             
             slider.addEventListener("input", (event) => {
                 const newConfidence = parseInt(event.target.value);
                 sliderValue.textContent = newConfidence;
-                sliderLabel.textContent = "Your rating:";
+                confidenceLabelEl.textContent = uiStrings["descriptor_confidence_set"][pLang];
                 if (!userData[descriptorId]) userData[descriptorId] = {};
                 userData[descriptorId].confidence = newConfidence;
                 saveUserData();
@@ -251,30 +344,53 @@ document.addEventListener("DOMContentLoaded", () => {
             });
 
         } else {
-            descriptorNameEl.textContent = "Errore";
-            document.getElementById("desc-description").textContent = "Descrittore non trovato.";
+            descriptorNameEl.textContent = uiStrings["descriptor_error_title"][pLang];
+            descriptionPrimaryEl.textContent = uiStrings["descriptor_error_text"][pLang];
         }
     }
 
-    // --- LOGICA PER LA PAGINA CATEGORIES.HTML ---
-    // (Questa logica è stata messa in pausa, la riprenderemo)
+    // --- LOGICA SETTINGS (settings.html) ---
+    const primaryLangSelect = document.getElementById("primary-lang-select");
+    const secondaryLangSelect = document.getElementById("secondary-lang-select");
+    const showTranslationsToggle = document.getElementById("show-translations-toggle");
 
-
-    // --- LOGICA PER LA PAGINA SETTINGS.HTML ---
-    const appVersionEl = document.getElementById("app-version-info");
-    if (appVersionEl) {
-        appVersionEl.textContent = `App Version: ${APP_VERSION}`;
-        const dbVersionEl = document.getElementById("db-version-info");
-        dbVersionEl.textContent = `Database Version: ${DB_VERSION}`;
-        const cacheStatusEl = document.getElementById("cache-status-info");
-        if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-            cacheStatusEl.textContent = `Cache Status: Active (App v${APP_VERSION} / DB v${DB_VERSION})`;
-        } else {
-            cacheStatusEl.textContent = "Cache Status: Not Active (Online only)";
+    if (primaryLangSelect) {
+        // 1. Popola i controlli con i valori salvati
+        primaryLangSelect.value = appSettings.primaryLang;
+        secondaryLangSelect.value = appSettings.secondaryLang;
+        showTranslationsToggle.checked = appSettings.showAllTranslations;
+        
+        // 2. Aggiungi listener per salvare e ricaricare
+        function handleSettingChange() {
+            appSettings.primaryLang = primaryLangSelect.value;
+            appSettings.secondaryLang = secondaryLangSelect.value;
+            appSettings.showAllTranslations = showTranslationsToggle.checked;
+            
+            // Validazione: non puoi avere la stessa lingua
+            if (appSettings.primaryLang === appSettings.secondaryLang) {
+                appSettings.secondaryLang = 'none';
+                secondaryLangSelect.value = 'none';
+            }
+            
+            saveAppSettings();
+            // Ricarica la pagina per applicare le traduzioni ovunque
+            window.location.reload();
         }
+        
+        primaryLangSelect.addEventListener('change', handleSettingChange);
+        secondaryLangSelect.addEventListener('change', handleSettingChange);
+        showTranslationsToggle.addEventListener('change', handleSettingChange);
+
+        // 3. Popola i testi di App Info (con traduzione)
+        const pLang = appSettings.primaryLang;
+        document.getElementById("app-version-info").textContent = `${uiStrings["settings_app_version"][pLang]}: ${APP_VERSION}`;
+        document.getElementById("db-version-info").textContent = `${uiStrings["settings_db_version"][pLang]}: ${DB_VERSION}`;
+        const cacheStatusKey = ('serviceWorker' in navigator && navigator.serviceWorker.controller) ? "settings_cache_status_active" : "settings_cache_status_inactive";
+        const cacheStatusText = uiStrings[cacheStatusKey][pLang] || cacheStatusKey;
+        document.getElementById("cache-status-info").textContent = `${uiStrings["settings_cache_status"][pLang]}: ${cacheStatusText} (App v${APP_VERSION} / DB v${DB_VERSION})`;
     }
 
-    // --- LOGICA PER LA BARRA DI NAVIGAZIONE (TUTTE LE PAGINE) ---
+    // --- LOGICA NAV BAR (TUTTE LE PAGINE) ---
     const currentPage = window.location.pathname.split('/').pop() || "index.html"; 
     const navLinks = document.querySelectorAll("footer .nav-item");
     navLinks.forEach(link => {
@@ -289,7 +405,7 @@ document.addEventListener("DOMContentLoaded", () => {
 }); // Fine di DOMContentLoaded
 
 
-// --- REGISTRAZIONE SERVICE WORKER (versione avanzata con popup) ---
+// --- REGISTRAZIONE SERVICE WORKER ---
 // (Questo blocco resta invariato)
 if ('serviceWorker' in navigator) {
   function showUpdatePopup(registration) {

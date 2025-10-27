@@ -12,24 +12,49 @@
 <body>
 
     <header>
-        <h1>Settings</h1>
+        <h1 data-translate-key="settings_title">Settings</h1>
     </header>
 
     <main>
-        <div class="detail-card">
-            <h3>App Info</h3>
-            <p id="app-version-info">App Version: ...</p>
-            <p id="db-version-info">Database Version: ...</p>
-            <p id="cache-status-info">Cache Status: ...</p>
+    <div class="detail-card">
+        <h3 data-translate-key="settings_language_title">Language Settings</h3>
+        
+        <div class="setting-item">
+            <label for="primary-lang-select" data-translate-key="settings_primary_lang">Primary Language</label>
+            <select id="primary-lang-select">
+                <option value="en">English</option>
+                <option value="it">Italiano</option>
+            </select>
+        </div>
+        
+        <div class="setting-item">
+            <label for="secondary-lang-select" data-translate-key="settings_secondary_lang">Secondary Language</label>
+            <select id="secondary-lang-select">
+                <option value="none" data-translate-key="settings_secondary_lang_none">None</option>
+                <option value="en">English</option>
+                <option value="it">Italiano</option>
+            </select>
         </div>
 
-        </main>
+        <div class="setting-item-checkbox">
+            <input type="checkbox" id="show-translations-toggle">
+            <label for="show-translations-toggle" data-translate-key="settings_show_translations_label">Show translations everywhere</label>
+        </div>
+    </div>
+
+    <div class="detail-card">
+        <h3 data-translate-key="settings_info_title">App Info</h3>
+        <p id="app-version-info"><span data-translate-key="settings_app_version">App Version</span>: ...</p>
+        <p id="db-version-info"><span data-translate-key="settings_db_version">Database Version</span>: ...</p>
+        <p id="cache-status-info"><span data-translate-key="settings_cache_status">Cache Status</span>: ...</p>
+    </div>
+    </main>
 
     <footer>
         <nav>
-            <a href="index.html" class="nav-item">Descriptors</a>
-            <a href="categories.html" class="nav-item">Categories</a>
-            <a href="settings.html" class="nav-item active">Settings</a>
+            <a href="index.html" class="nav-item" data-translate-key="nav_descriptors">Descriptors</a>
+            <a href="categories.html" class="nav-item" data-translate-key="nav_categories">Categories</a>
+            <a href="settings.html" class="nav-item active" data-translate-key="nav_settings">Settings</a>
         </nav>
     </footer>
 
